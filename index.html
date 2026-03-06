@@ -3,6 +3,30 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<<<<<<< codex/create-digital-twin-prototype-for-production-line-x1t8dz
+  <title>Digital Twin — Powder Coating Line v2</title>
+  <style>
+    :root {
+      --bg: #0f172a; --panel: #111827; --muted: #1f2937; --text: #e5e7eb;
+      --idle: #6b7280; --run: #16a34a; --err: #dc2626; --warn: #f59e0b;
+    }
+    body { margin: 0; background: var(--bg); color: var(--text); font-family: Inter, Segoe UI, sans-serif; }
+    .wrap { max-width: 1500px; margin: 10px auto; padding: 0 12px; }
+    .panel { background: var(--panel); border: 1px solid #334155; border-radius: 10px; padding: 12px; margin-bottom: 12px; }
+    .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: end; }
+    .field { display: flex; flex-direction: column; gap: 4px; min-width: 190px; }
+    .field input, .field select { background: var(--muted); color: var(--text); border: 1px solid #475569; border-radius: 8px; padding: 8px; }
+    .toggles { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
+    .chk { background: #0b1220; border: 1px solid #334155; border-radius: 8px; padding: 6px 10px; }
+    button { border: 0; border-radius: 8px; padding: 8px 12px; color: #fff; cursor: pointer; background: #2563eb; }
+    button.secondary { background: #4b5563; } button.warn { background: #ea580c; } button.danger { background: #b91c1c; }
+    .status { margin-top: 8px; color: #cbd5e1; font-size: 14px; }
+    .pill { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12px; margin-right: 6px; }
+
+    .pipeline { display: flex; gap: 8px; flex-wrap: wrap; }
+    .node { min-width: 168px; border-radius: 10px; padding: 8px; background: #1e293b; border: 1px solid #334155; }
+    .node h4 { margin: 0 0 6px; font-size: 14px; }
+=======
   <title>Digital Twin — Powder Coating Line</title>
   <style>
     :root {
@@ -31,19 +55,53 @@
     .node { background: #1e293b; border-radius: 10px; min-width: 170px; padding: 8px; border: 1px solid #334155; position: relative; }
     .node h4 { margin: 0 0 6px; font-size: 14px; }
     .badge { display: inline-block; border-radius: 999px; padding: 2px 8px; font-size: 12px; margin-bottom: 4px; }
+>>>>>>> main
     .arrow { font-size: 24px; align-self: center; opacity: 0.8; }
 
     .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     .chartBox { background: #0b1220; border: 1px solid #334155; border-radius: 10px; padding: 8px; }
     canvas { width: 100%; height: 230px; }
 
+<<<<<<< codex/create-digital-twin-prototype-for-production-line-x1t8dz
+    .kpi { display: grid; grid-template-columns: repeat(6, minmax(120px, 1fr)); gap: 10px; margin-top: 10px; }
+    .card { background: #0b1220; border: 1px solid #334155; border-radius: 8px; padding: 8px; }
+    .v { font-size: 18px; color: #bbf7d0; font-weight: 700; }
+=======
     .kpi { display: grid; grid-template-columns: repeat(4, minmax(120px, 1fr)); gap: 10px; margin-top: 10px; }
     .kpi .card { background: #0b1220; border: 1px solid #334155; border-radius: 8px; padding: 8px; }
     .kpi .v { font-size: 20px; color: #bbf7d0; font-weight: 700; }
+>>>>>>> main
   </style>
 </head>
 <body>
 <div class="wrap">
+<<<<<<< codex/create-digital-twin-prototype-for-production-line-x1t8dz
+  <h2>🎛️ Digital Twin: Линия эпоксидно‑полиэфирной порошковой краски (Stage 2/3)</h2>
+
+  <section class="panel">
+    <h3>1) Верхняя панель — Управление + Permissives + Safety</h3>
+    <div class="row">
+      <label class="field">Batch_size_kg<input id="batchSize" type="number" min="100" max="2000" step="10" value="500" /></label>
+      <label class="field">Target Extruder Temp °C<input id="extrTemp" type="range" min="100" max="120" step="0.5" value="110" /></label>
+      <label class="field">Mill_Rotor_mps<input id="millRotor" type="range" min="70" max="130" step="1" value="95" /></label>
+      <label class="field">Current color<select id="colorNow"><option>RAL9016</option><option>RAL9005</option><option>RAL3020</option></select></label>
+      <label class="field">Next color<select id="colorNext"><option>RAL9016</option><option>RAL9005</option><option>RAL3020</option></select></label>
+
+      <button id="startBtn">Start Batch</button>
+      <button id="pauseBtn" class="secondary">Pause/Resume</button>
+      <button id="faultBtn" class="warn">Inject Fault</button>
+      <button id="clearFaultBtn" class="danger">Clear Fault/Trip</button>
+      <button id="ackBtn" class="secondary">Operator Ack</button>
+      <button id="mechBtn" class="secondary">Mechanic Service</button>
+    </div>
+
+    <div class="toggles">
+      <label class="chk"><input id="atex" type="checkbox" checked /> ATEX_ok</label>
+      <label class="chk"><input id="ground" type="checkbox" checked /> Ground_ok</label>
+      <label class="chk"><input id="vent" type="checkbox" checked /> Vent_on</label>
+    </div>
+
+=======
   <h2>🎛️ Цифровой двойник линии эпоксидно‑полиэфирной порошковой краски</h2>
 
   <section class="panel">
@@ -63,16 +121,27 @@
       <button id="faultBtn" class="warn">Inject Fault</button>
       <button id="clearFaultBtn" class="danger">Clear Fault</button>
     </div>
+>>>>>>> main
     <div id="topStatus" class="status"></div>
   </section>
 
   <section class="panel">
+<<<<<<< codex/create-digital-twin-prototype-for-production-line-x1t8dz
+    <h3>2) Центральная панель — Мнемосхема + WIP бункеры</h3>
+=======
     <h3>2) Центральная панель — Мнемосхема</h3>
+>>>>>>> main
     <div id="pipeline" class="pipeline"></div>
     <div id="massInfo" class="status"></div>
   </section>
 
   <section class="panel">
+<<<<<<< codex/create-digital-twin-prototype-for-production-line-x1t8dz
+    <h3>3) Нижняя панель — Аналитика + KPI</h3>
+    <div class="grid-2">
+      <div class="chartBox"><b>Температуры зон экструдера</b><canvas id="tempChart" width="640" height="240"></canvas></div>
+      <div class="chartBox"><b>Энергопотребление E_total_kWh</b><canvas id="energyChart" width="640" height="240"></canvas></div>
+=======
     <h3>3) Нижняя панель — Аналитика</h3>
     <div class="grid-2">
       <div class="chartBox">
@@ -83,18 +152,76 @@
         <b>Энергопотребление E_total_kWh</b>
         <canvas id="energyChart" width="640" height="240"></canvas>
       </div>
+>>>>>>> main
     </div>
     <div class="kpi">
       <div class="card"><div>Yield_pct</div><div class="v" id="kpiYield">0%</div></div>
       <div class="card"><div>T_cycle_min</div><div class="v" id="kpiCycle">0</div></div>
+<<<<<<< codex/create-digital-twin-prototype-for-production-line-x1t8dz
+      <div class="card"><div>D50 / D90</div><div class="v" id="kpiD">0 / 0</div></div>
+      <div class="card"><div>Losses_pct</div><div class="v" id="kpiLoss">0%</div></div>
+      <div class="card"><div>E_spec_kWh_kg</div><div class="v" id="kpiEspec">0</div></div>
+      <div class="card"><div>QC Released / Hold</div><div class="v" id="kpiQc">0 / 0</div></div>
+=======
       <div class="card"><div>D50_um</div><div class="v" id="kpiD50">0</div></div>
       <div class="card"><div>Losses_pct</div><div class="v" id="kpiLoss">0%</div></div>
+>>>>>>> main
     </div>
   </section>
 </div>
 
 <script>
 const NODES = ["Dosing","Premixer","Extruder","Cooling & Flaker","ACM Mill","Sieve","Packing"];
+<<<<<<< codex/create-digital-twin-prototype-for-production-line-x1t8dz
+const IDLE="Idle", RUNNING="Running", ERROR="Error", WARNING="Warning", TRIP="TRIP";
+const kwNominal = { "Dosing":4, "Premixer":22, "Extruder":55, "Cooling & Flaker":9, "ACM Mill":11, "Sieve":3, "Packing":4 };
+
+const state = {
+  running:false, paused:false, batchActive:false, batchCompleted:false,
+  faultActive:false, tripActive:false, warningText:null, faultCode:null, faultNode:null,
+  operatorAck:false, mechanicReady:true,
+  tickMin:0, actualBatchKg:500, targetBatchKg:500,
+  premixCycleTargetMin:12, premixElapsedMin:0,
+  dosingProgressKg:0, premixHoldKg:0, extruderHotMeltKg:0,
+  chipsBufferKg:0, chipsBufferCapKg:250, powderBufferKg:0, powderBufferCapKg:300,
+  millPowderInternalKg:0, packedGoodKg:0, sieveRejectKg:0, millDustLossKg:0,
+  classifierRecycleKg:0, remillFromQCkg:0,
+  qcQueue:[], qcReleasedKg:0, qcHoldKg:0, qcRejectedKg:0,
+  boxesCount:0, shaftRpm:0, tMixC:25, extrZonesC:[95,100,105],
+  extrTargetTempC:110, millRotorMps:95,
+  latestD50:38, latestD90:86, latestDeltaE:0.7,
+  dustDPbar:0.6, dustLELpct:6, lossDustPct:1.5,
+  atexOk:true, groundOk:true, ventOn:true,
+  cipRemainingMin:0,
+  totalExtruderRuntimeMinLife:0, maintenanceDue:false, maintenanceDowntimeMin:0,
+  energyTotalKWh:0, history:{tick:[], z1:[], z2:[], z3:[], energy:[]}, statuses:Object.fromEntries(NODES.map(n=>[n, IDLE]))
+};
+
+const rnd=(a,b)=>a+Math.random()*(b-a), clamp=(v,a,b)=>Math.min(b,Math.max(a,v)), lerp=(c,t,k)=>c+(t-c)*k;
+
+function permissivesOk(){ return state.atexOk && state.groundOk && state.ventOn; }
+function setStatusesIdle(){ state.statuses = Object.fromEntries(NODES.map(n=>[n, IDLE])); }
+
+function resetBatch(){
+  state.running=true; state.paused=false; state.batchActive=true; state.batchCompleted=false;
+  state.faultActive=false; state.tripActive=false; state.warningText=null; state.faultCode=null; state.faultNode=null; state.operatorAck=false;
+  state.tickMin=0;
+  state.targetBatchKg=Number(batchSize.value); state.actualBatchKg = state.targetBatchKg * rnd(0.99,1.01);
+  state.extrTargetTempC=Number(extrTemp.value); state.millRotorMps=Number(millRotor.value);
+  state.premixCycleTargetMin=Math.floor(rnd(10,16)); state.premixElapsedMin=0;
+  state.dosingProgressKg=0; state.premixHoldKg=0; state.extruderHotMeltKg=0;
+  state.chipsBufferKg=0; state.powderBufferKg=0; state.millPowderInternalKg=0;
+  state.packedGoodKg=0; state.sieveRejectKg=0; state.millDustLossKg=0; state.classifierRecycleKg=0; state.remillFromQCkg=0;
+  state.qcQueue=[]; state.qcReleasedKg=0; state.qcHoldKg=0; state.qcRejectedKg=0;
+  state.boxesCount=0; state.shaftRpm=0; state.tMixC=25; state.extrZonesC=[95,100,105];
+  state.latestD50=38; state.latestD90=86; state.latestDeltaE=0.7;
+  state.dustDPbar=0.6; state.dustLELpct=6;
+  state.energyTotalKWh=0; state.history={tick:[],z1:[],z2:[],z3:[],energy:[]};
+  state.atexOk=atex.checked; state.groundOk=ground.checked; state.ventOn=vent.checked;
+  state.cipRemainingMin = colorNow.value !== colorNext.value ? 30 : 0;
+  state.maintenanceDowntimeMin = 0;
+  setStatusesIdle();
+=======
 const IDLE = "Idle", RUNNING = "Running", ERROR = "Error";
 
 const state = {
@@ -134,10 +261,95 @@ function resetBatch(){
   state.energyTotalKWh = 0;
   state.history = { tick:[], z1:[], z2:[], z3:[], energy:[] };
   state.statuses = Object.fromEntries(NODES.map(n=>[n, IDLE]));
+>>>>>>> main
 }
 
 function injectFault(){
   if(!state.batchActive) return;
+<<<<<<< codex/create-digital-twin-prototype-for-production-line-x1t8dz
+  const faults = [{code:"EXTR_ZONE_HOT", node:"Extruder"},{code:"FILTER_DP_HIGH", node:"ACM Mill"},{code:"PACKER_JAM", node:"Packing"}];
+  const f = faults[Math.floor(Math.random()*faults.length)];
+  state.faultActive=true; state.faultCode=f.code; state.faultNode=f.node; state.running=false; state.paused=true;
+  if(f.code==="EXTR_ZONE_HOT") state.extrZonesC[1]=125;
+  if(f.code==="FILTER_DP_HIGH") state.dustDPbar=2.1;
+}
+function clearFault(){ state.faultActive=false; state.faultCode=null; state.faultNode=null; if(state.dustLELpct<10 && !state.tripActive){ state.paused=false; state.running=state.batchActive; } }
+
+function evaluateQC(massKg){
+  const d50 = clamp(42 - (state.millRotorMps-70)*0.18 + rnd(-2,2), 30, 50);
+  const d90 = clamp(95 - (state.millRotorMps-70)*0.35 + rnd(-6,6), 70, 120);
+  const deltaE = clamp((colorNow.value===colorNext.value?0.8:1.2) + rnd(-0.35,0.55), 0.4, 2.2);
+  state.latestD50=d50; state.latestD90=d90; state.latestDeltaE=deltaE;
+
+  const dOk = d90 <= 90;
+  const cOk = deltaE <= 1.5;
+  if(dOk && cOk){ state.qcReleasedKg += massKg; }
+  else if(!dOk){ state.remillFromQCkg += massKg; } // доработка на перемол
+  else { state.qcRejectedKg += massKg; } // цветовой брак
+}
+
+function processQcQueue(){
+  let hold=0;
+  const remain=[];
+  for(const lot of state.qcQueue){
+    if(state.tickMin >= lot.readyTick){ evaluateQC(lot.mass); }
+    else { hold += lot.mass; remain.push(lot); }
+  }
+  state.qcQueue=remain; state.qcHoldKg=hold;
+}
+
+function updateSafetyAndDust(){
+  // Dust DP from dust generation and ventilation effect
+  const ventFactor = state.ventOn ? -0.015 : 0.02;
+  state.dustDPbar = clamp(state.dustDPbar + (state.millDustLossKg>0 ? 0.002 : 0) + ventFactor, 0.4, 2.4);
+
+  // LEL in exhaust
+  const dustEmission = state.statuses["ACM Mill"]===RUNNING ? rnd(0.8,1.6) : -0.6;
+  const ventCooling = state.ventOn ? -0.7 : 0.5;
+  state.dustLELpct = clamp(state.dustLELpct + dustEmission + ventCooling, 0, 40);
+
+  if(state.dustLELpct >= 15 && state.dustLELpct < 25){ state.warningText = "Dust_LEL >= 15% (Warning)"; }
+  if(state.dustDPbar > 1.8){ state.warningText = "FILTER_DP_HIGH: Dust_DP_bar > 1.8"; }
+
+  if(state.dustLELpct >= 25){
+    state.tripActive=true; state.running=false; state.paused=true; state.warningText="TRIP: Dust_LEL >= 25%";
+  }
+  if(state.tripActive && state.dustLELpct < 10 && state.operatorAck){
+    state.tripActive=false; state.warningText="TRIP cleared: Dust_LEL < 10%";
+    if(state.batchActive){ state.paused=false; state.running=true; }
+  }
+}
+
+function updateEnergy(){
+  // dynamic model: running=100%, idle-hot=20% while batch active
+  let kw = 0;
+  for(const n of NODES){
+    const run = state.statuses[n]===RUNNING;
+    if(run) kw += kwNominal[n];
+    else if(state.batchActive && !state.batchCompleted) kw += kwNominal[n]*0.2;
+  }
+  state.energyTotalKWh += kw / 60;
+}
+
+function tick(){
+  if(!state.batchActive || state.batchCompleted) return;
+
+  state.atexOk=atex.checked; state.groundOk=ground.checked; state.ventOn=vent.checked;
+
+  // CIP/Flush between colors
+  if(state.cipRemainingMin > 0){
+    state.running=false; state.paused=true; setStatusesIdle();
+    state.cipRemainingMin -= 1; state.tickMin += 1;
+    updateEnergy();
+    state.history.tick.push(state.tickMin); state.history.z1.push(state.extrZonesC[0]); state.history.z2.push(state.extrZonesC[1]); state.history.z3.push(state.extrZonesC[2]); state.history.energy.push(state.energyTotalKWh);
+    return;
+  }
+
+  if(state.tripActive || state.faultActive || state.paused || !state.running) { updateSafetyAndDust(); return; }
+
+  state.tickMin += 1;
+  setStatusesIdle();
+=======
   const list = [
     {code:"EXTR_ZONE_HOT", node:"Extruder"},
     {code:"FILTER_DP_HIGH", node:"ACM Mill"},
@@ -158,6 +370,7 @@ function tick(){
   if(!state.running || state.paused || !state.batchActive || state.batchCompleted || state.faultActive) return;
   state.tickMin += 1;
   state.statuses = Object.fromEntries(NODES.map(n=>[n, IDLE]));
+>>>>>>> main
 
   // Dosing
   const dosingRate = state.actualBatchKg / 5;
@@ -177,24 +390,160 @@ function tick(){
   }
   const premixComplete = state.premixElapsedMin >= state.premixCycleTargetMin && state.premixHoldKg > 0;
 
+<<<<<<< codex/create-digital-twin-prototype-for-production-line-x1t8dz
+  // Extruder with bottleneck control by chips buffer fill
+  const chipsFill = state.chipsBufferKg / state.chipsBufferCapKg;
+  let extruderDerate = chipsFill > 0.9 ? 0 : chipsFill > 0.75 ? 0.5 : 1.0;
+
+  // MTBF maintenance
+  if(state.totalExtruderRuntimeMinLife >= 6000 && !state.maintenanceDue){
+    state.maintenanceDue = true;
+    state.maintenanceDowntimeMin = 60;
+    state.warningText = "MTBF: replace extruder screws (60 min downtime)";
+  }
+  if(state.maintenanceDowntimeMin > 0){
+    state.maintenanceDowntimeMin -= 1;
+    extruderDerate = 0;
+  }
+
+  const canRunCritical = permissivesOk() && !state.tripActive && !state.faultActive;
+  if(premixComplete && canRunCritical && extruderDerate > 0){
+    state.statuses["Extruder"] = RUNNING;
+    const feedRate = (250 * extruderDerate) / 60;
+=======
   // Extruder
   if(premixComplete){
     state.statuses["Extruder"] = RUNNING;
     const feedRate = rnd(250,300)/60;
+>>>>>>> main
     for(let i=0;i<3;i++) state.extrZonesC[i] = lerp(state.extrZonesC[i], state.extrTargetTempC + (i-1)*3, 0.2);
     const moved = Math.min(feedRate, state.premixHoldKg);
     state.premixHoldKg -= moved;
     state.extruderHotMeltKg += moved;
+<<<<<<< codex/create-digital-twin-prototype-for-production-line-x1t8dz
+    state.totalExtruderRuntimeMinLife += 1;
+  }
+
+  // Cooling + chips hopper
+  if(state.extruderHotMeltKg > 0){
+    state.statuses["Cooling & Flaker"] = RUNNING;
+    const moved = Math.min(320/60, state.extruderHotMeltKg, state.chipsBufferCapKg - state.chipsBufferKg);
+=======
   }
 
   // Cooling belt + flaker
   if(state.extruderHotMeltKg > 0){
     state.statuses["Cooling & Flaker"] = RUNNING;
     const moved = Math.min(320/60, state.extruderHotMeltKg);
+>>>>>>> main
     state.extruderHotMeltKg -= moved;
     state.chipsBufferKg += moved;
   }
 
+<<<<<<< codex/create-digital-twin-prototype-for-production-line-x1t8dz
+  // ACM mill + classifier recycle loop
+  if(state.remillFromQCkg > 0){
+    const back = Math.min(state.remillFromQCkg, 4.0);
+    state.remillFromQCkg -= back;
+    state.chipsBufferKg = Math.min(state.chipsBufferCapKg, state.chipsBufferKg + back);
+  }
+
+  if(state.chipsBufferKg > 0 && canRunCritical){
+    state.statuses["ACM Mill"] = RUNNING;
+    const moved = Math.min((200 + state.millRotorMps)/60, state.chipsBufferKg);
+    state.chipsBufferKg -= moved;
+
+    // Dust losses configurable 1-2%
+    state.lossDustPct = rnd(1,2);
+    const dust = moved * (state.lossDustPct/100);
+    state.millDustLossKg += dust;
+    let usable = moved - dust;
+
+    // Classifier split by D90 target: oversize recycles
+    const recycleFrac = clamp((92 - (state.millRotorMps*0.45)) / 100, 0.05, 0.35);
+    const recycle = usable * recycleFrac;
+    const fine = usable - recycle;
+    state.classifierRecycleKg += recycle;
+    state.chipsBufferKg = Math.min(state.chipsBufferCapKg, state.chipsBufferKg + recycle);
+
+    state.millPowderInternalKg += fine;
+  }
+
+  // Sieve with reject and QC hold
+  if(state.millPowderInternalKg > 0){
+    state.statuses["Sieve"] = RUNNING;
+    const moved = Math.min(240/60, state.millPowderInternalKg);
+    state.millPowderInternalKg -= moved;
+    const reject = moved * rnd(0.005,0.01);
+    state.sieveRejectKg += reject;
+    const toQc = moved - reject;
+    const delay = Math.floor(rnd(30,46));
+    state.qcQueue.push({mass:toQc, readyTick:state.tickMin + delay});
+  }
+
+  processQcQueue();
+
+  // Powder buffer before packing; only QC released material
+  const releaseToPowder = Math.min(state.qcReleasedKg, state.powderBufferCapKg - state.powderBufferKg, 8.0);
+  state.qcReleasedKg -= releaseToPowder;
+  state.powderBufferKg += releaseToPowder;
+
+  // Packing 1 box / 30-60 sec (1-2 boxes per min)
+  if(state.powderBufferKg >= 20){
+    state.statuses["Packing"] = RUNNING;
+    const boxes = Math.floor(rnd(1,2.1));
+    let pack = Math.min(state.powderBufferKg, boxes*20);
+    pack -= pack % 20;
+    state.powderBufferKg -= pack;
+    state.packedGoodKg += pack;
+    state.boxesCount += pack/20;
+  }
+
+  if(!permissivesOk()){ state.warningText = "Permissive FALSE: ATEX/Ground/Vent block Extruder & Mill"; }
+
+  updateSafetyAndDust();
+  if(state.faultActive) state.statuses[state.faultNode] = ERROR;
+  if(state.tripActive) setStatusesIdle();
+
+  updateEnergy();
+  state.history.tick.push(state.tickMin);
+  state.history.z1.push(state.extrZonesC[0]); state.history.z2.push(state.extrZonesC[1]); state.history.z3.push(state.extrZonesC[2]);
+  state.history.energy.push(state.energyTotalKWh);
+
+  const inProcess = state.premixHoldKg + state.extruderHotMeltKg + state.chipsBufferKg + state.millPowderInternalKg + state.powderBufferKg + state.qcHoldKg + state.qcReleasedKg;
+  if(state.dosingProgressKg>=state.actualBatchKg && state.premixElapsedMin>=state.premixCycleTargetMin && inProcess < 0.001){
+    state.batchCompleted=true; state.batchActive=false; state.running=false; state.paused=false; setStatusesIdle();
+  }
+}
+
+function statusColor(s){ return s===RUNNING?"var(--run)":s===ERROR?"var(--err)":"var(--idle)"; }
+
+function drawPipeline(){
+  const m = {
+    "Dosing": Math.max(0, state.actualBatchKg-state.dosingProgressKg), "Premixer": state.premixHoldKg,
+    "Extruder": state.extruderHotMeltKg, "Cooling & Flaker": state.chipsBufferKg,
+    "ACM Mill": state.millPowderInternalKg, "Sieve": state.qcHoldKg+state.qcReleasedKg, "Packing": state.packedGoodKg
+  };
+  pipeline.innerHTML="";
+  NODES.forEach((n,i)=>{
+    const d=document.createElement('div'); d.className='node';
+    d.innerHTML=`<h4>${n}</h4><span class="pill" style="background:${statusColor(state.statuses[n])}">${state.statuses[n]}</span><div>m=${m[n].toFixed(1)} kg</div>`;
+    pipeline.appendChild(d);
+    if(i<NODES.length-1){ const a=document.createElement('div'); a.className='arrow'; a.textContent='➡'; pipeline.appendChild(a); }
+  });
+
+  const fillChip = (state.chipsBufferKg/state.chipsBufferCapKg*100).toFixed(1);
+  const fillPow = (state.powderBufferKg/state.powderBufferCapKg*100).toFixed(1);
+  massInfo.textContent = `WIP Chips bunker: ${state.chipsBufferKg.toFixed(1)}/${state.chipsBufferCapKg} kg (${fillChip}%) | Powder bunker: ${state.powderBufferKg.toFixed(1)}/${state.powderBufferCapKg} kg (${fillPow}%) | Classifier recycle: ${state.classifierRecycleKg.toFixed(1)} kg | ReMill from QC: ${state.remillFromQCkg.toFixed(1)} kg | Sieve reject: ${state.sieveRejectKg.toFixed(2)} kg | Dust loss: ${state.millDustLossKg.toFixed(2)} kg`;
+}
+
+function drawLineChart(id, series, colors, yMin, yMax){
+  const c=document.getElementById(id), ctx=c.getContext('2d'), w=c.width, h=c.height, pad=30;
+  ctx.clearRect(0,0,w,h); ctx.strokeStyle='#334155'; ctx.strokeRect(pad,10,w-pad-10,h-pad-10);
+  const n=Math.max(2, series[0].length);
+  const x=i=>pad+i*(w-pad-20)/(n-1), y=v=>h-pad-((v-yMin)/(yMax-yMin||1))*(h-pad-20);
+  series.forEach((arr,idx)=>{ ctx.beginPath(); ctx.strokeStyle=colors[idx]; ctx.lineWidth=2; arr.forEach((v,i)=> i?ctx.lineTo(x(i),y(v)):ctx.moveTo(x(i),y(v))); ctx.stroke(); });
+=======
   // ACM mill with 1-2% filter dust loss
   if(state.chipsBufferKg > 0){
     state.statuses["ACM Mill"] = RUNNING;
@@ -292,10 +641,31 @@ function drawLineChart(canvasId, series, colors, yMin, yMax){
     arr.forEach((v,i)=>{ if(i===0) ctx.moveTo(x(i), y(v)); else ctx.lineTo(x(i), y(v)); });
     ctx.stroke();
   });
+>>>>>>> main
 }
 
 function render(){
   drawPipeline();
+<<<<<<< codex/create-digital-twin-prototype-for-production-line-x1t8dz
+  const runState = state.tripActive ? TRIP : (state.running&&!state.paused ? RUNNING : IDLE);
+  topStatus.innerHTML =
+    `<span class="pill" style="background:${runState===RUNNING?'var(--run)':runState===TRIP?'var(--err)':'var(--idle)'}">${runState}</span>`+
+    `<span class="pill" style="background:${state.warningText?'var(--warn)':'var(--idle)'}">${state.warningText||'No warnings'}</span>`+
+    `<span class="pill" style="background:${permissivesOk()?'var(--run)':'var(--err)'}">Permissives ${permissivesOk()?'OK':'BLOCK'}</span>`+
+    `Tick: ${state.tickMin} min | Fault: ${state.faultCode||'None'} | Dust_DP_bar=${state.dustDPbar.toFixed(2)} | Dust_LEL_pct=${state.dustLELpct.toFixed(1)} | CIP=${state.cipRemainingMin} min | MTBF downtime=${state.maintenanceDowntimeMin} min`;
+
+  const losses = state.millDustLossKg + state.sieveRejectKg + state.qcRejectedKg;
+  const yieldPct = state.actualBatchKg>0 ? state.packedGoodKg/state.actualBatchKg*100 : 0;
+  const lossPct = state.actualBatchKg>0 ? losses/state.actualBatchKg*100 : 0;
+  const eSpec = state.packedGoodKg>0 ? state.energyTotalKWh/state.packedGoodKg : 0;
+
+  kpiYield.textContent = `${yieldPct.toFixed(2)}%`;
+  kpiCycle.textContent = String(state.tickMin);
+  kpiD.textContent = `${state.latestD50.toFixed(1)} / ${state.latestD90.toFixed(1)}`;
+  kpiLoss.textContent = `${lossPct.toFixed(2)}%`;
+  kpiEspec.textContent = eSpec.toFixed(3);
+  kpiQc.textContent = `${(state.powderBufferKg + state.qcReleasedKg).toFixed(1)} / ${state.qcHoldKg.toFixed(1)} kg`;
+=======
   const top = document.getElementById('topStatus');
   top.textContent = `Status: ${state.running&&!state.paused ? 'Running' : 'Paused/Stopped'} | Fault: ${state.faultCode || 'None'} | Tick: ${state.tickMin} min`;
 
@@ -308,12 +678,25 @@ function render(){
   document.getElementById('kpiCycle').textContent = String(state.tickMin);
   document.getElementById('kpiD50').textContent = d50.toFixed(1);
   document.getElementById('kpiLoss').textContent = `${lossPct.toFixed(2)}%`;
+>>>>>>> main
 
   drawLineChart('tempChart', [state.history.z1,state.history.z2,state.history.z3], ['#60a5fa','#f97316','#22c55e'], 90, 130);
   const eMax = Math.max(10, ...state.history.energy, state.energyTotalKWh);
   drawLineChart('energyChart', [state.history.energy], ['#a78bfa'], 0, eMax*1.1);
 }
 
+<<<<<<< codex/create-digital-twin-prototype-for-production-line-x1t8dz
+startBtn.onclick = ()=>{ resetBatch(); render(); };
+pauseBtn.onclick = ()=>{ if(state.batchActive){ state.paused=!state.paused; state.running=!state.paused; render(); } };
+faultBtn.onclick = ()=>{ injectFault(); render(); };
+clearFaultBtn.onclick = ()=>{ state.operatorAck=true; clearFault(); if(state.dustLELpct<10) state.tripActive=false; if(state.batchActive){ state.paused=false; state.running=true; } render(); };
+ackBtn.onclick = ()=>{ state.operatorAck=true; state.warningText = "Operator acknowledged warning"; };
+mechBtn.onclick = ()=>{ state.mechanicReady=true; if(state.maintenanceDue){ state.maintenanceDowntimeMin=0; state.maintenanceDue=false; state.totalExtruderRuntimeMinLife=0; state.warningText='Mechanic completed screw replacement'; } render(); };
+extrTemp.oninput = e=>state.extrTargetTempC=Number(e.target.value);
+millRotor.oninput = e=>state.millRotorMps=Number(e.target.value);
+
+setInterval(()=>{ tick(); render(); }, 500);
+=======
 document.getElementById('startBtn').onclick = ()=>{ resetBatch(); render(); };
 document.getElementById('pauseBtn').onclick = ()=>{ if(state.batchActive){ state.paused = !state.paused; state.running = !state.paused; render(); } };
 document.getElementById('faultBtn').onclick = ()=>{ injectFault(); render(); };
@@ -323,6 +706,7 @@ document.getElementById('extrTemp').oninput = e => state.extrTargetTempC = Numbe
 document.getElementById('millRotor').oninput = e => state.millRotorMps = Number(e.target.value);
 
 setInterval(()=>{ tick(); render(); }, 500); // 1 virtual minute every 0.5s
+>>>>>>> main
 render();
 </script>
 </body>
