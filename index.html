@@ -3,188 +3,189 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Цифровой двойник — Этап 4</title>
+  <title>Цифровой двойник — Stage 4</title>
   <style>
-    body{font-family:Inter,Arial,sans-serif;background:#0f172a;color:#e2e8f0;margin:0}
-    .w{max-width:1400px;margin:10px auto;padding:0 12px}
-    .p{background:#111827;border:1px solid #334155;border-radius:10px;padding:10px;margin-bottom:10px}
-    .r{display:flex;gap:8px;flex-wrap:wrap;align-items:end}
+    body{margin:0;background:#0f172a;color:#e2e8f0;font-family:Inter,Arial,sans-serif}
+    .wrap{max-width:1400px;margin:10px auto;padding:0 12px}
+    .panel{background:#111827;border:1px solid #334155;border-radius:10px;padding:10px;margin-bottom:10px}
+    .row{display:flex;gap:8px;flex-wrap:wrap;align-items:end}
     input,select,button{padding:7px;border-radius:8px;border:1px solid #475569;background:#1f2937;color:#e5e7eb}
     button{background:#2563eb;cursor:pointer}
     .tabs button{background:#334155}
     .tabs button.active{background:#0ea5e9}
     .grid{display:grid;grid-template-columns:repeat(4,minmax(140px,1fr));gap:8px}
     .card{background:#0b1220;border:1px solid #334155;border-radius:8px;padding:8px}
-    .v{font-weight:700;color:#bbf7d0}
+    .val{font-weight:700;color:#bbf7d0}
     .nodes{display:flex;gap:8px;flex-wrap:wrap}
-    .n{background:#1e293b;border:1px solid #334155;border-radius:8px;padding:8px;min-width:160px}
+    .node{background:#1e293b;border:1px solid #334155;border-radius:8px;padding:8px;min-width:165px}
     .Idle{color:#94a3b8}.Running{color:#22c55e}.Error{color:#ef4444}
-    table{width:100%;border-collapse:collapse}td,th{border:1px solid #334155;padding:6px;font-size:13px}
-    .msg{font-size:13px;color:#fda4af}
+    table{width:100%;border-collapse:collapse} td,th{border:1px solid #334155;padding:6px;font-size:13px}
+    #msg{font-size:13px;color:#fda4af;margin-top:4px}
   </style>
 </head>
 <body>
-<div class="w">
-  <h2>Этап 4 — Virtual Commissioning (PLC + Physics + DataBus) / 6D-8D</h2>
+<div class="wrap">
+  <h2>Этап 4 — PLC + Physics + DataBus (перезапись без конфликтов)</h2>
 
-  <section class="p">
-    <div class="r">
-      <label>Batch_size_kg <input id="batch" type="number" value="500" min="100" max="2000"></label>
-      <label>Extruder_Temp_°C <input id="temp" type="number" value="110" min="100" max="120"></label>
-      <label>Mill_Rotor_mps <input id="rotor" type="number" value="95" min="70" max="130"></label>
-      <label>Цвет текущий <select id="cnow"><option>RAL9016</option><option>RAL9005</option><option>RAL3020</option></select></label>
-      <label>Цвет следующий <select id="cnext"><option>RAL9016</option><option>RAL9005</option><option>RAL3020</option></select></label>
+  <section class="panel">
+    <div class="row">
+      <label>Batch_size_kg <input id="batch" type="number" min="100" max="2000" value="500"></label>
+      <label>Extruder_Temp_°C <input id="temp" type="number" min="100" max="120" value="110"></label>
+      <label>Mill_Rotor_mps <input id="rotor" type="number" min="70" max="130" value="95"></label>
+      <label>Цвет текущий <select id="colorNow"><option>RAL9016</option><option>RAL9005</option><option>RAL3020</option></select></label>
+      <label>Цвет следующий <select id="colorNext"><option>RAL9016</option><option>RAL9005</option><option>RAL3020</option></select></label>
       <button id="btnStart">Start Batch</button>
       <button id="btnPause">Pause</button>
       <button id="btnResume">Resume</button>
-      <button id="btnInject">Inject Fault</button>
+      <button id="btnFault">Inject Fault</button>
       <button id="btnClear">Принять / Clear Fault</button>
     </div>
-    <div class="r" style="margin-top:6px">
+    <div class="row" style="margin-top:6px">
       <label><input id="atex" type="checkbox" checked> ATEX_ok</label>
       <label><input id="ground" type="checkbox" checked> Ground_ok</label>
       <label><input id="vent" type="checkbox" checked> Vent_on</label>
-      <button id="btnPermissive">Принять permissives</button>
+      <button id="btnPerm">Принять permissives</button>
     </div>
     <div id="stateLine"></div>
-    <div id="msg" class="msg"></div>
+    <div id="msg"></div>
   </section>
 
-  <section class="p tabs">
-    <button class="active" data-tab="scada">SCADA</button>
-    <button data-tab="plc">Инженерный вид PLC</button>
-    <button data-tab="maintenance">ТО / 7D</button>
-    <button data-tab="personnel">Кадры / Human Factor</button>
+  <section class="panel tabs">
+    <button class="active" data-tab="tabScada">SCADA</button>
+    <button data-tab="tabPlc">PLC</button>
+    <button data-tab="tabMaint">ТО / 6D-8D</button>
+    <button data-tab="tabStaff">Кадры</button>
   </section>
 
-  <section class="p tab" id="scada">
-    <div class="nodes" id="nodes"></div>
-    <div class="grid" id="kpi"></div>
+  <section id="tabScada" class="panel tab">
+    <div id="nodes" class="nodes"></div>
+    <div id="kpi" class="grid"></div>
   </section>
 
-  <section class="p tab" id="plc" style="display:none">
-    <h3>Теги PLC / DataBus</h3>
+  <section id="tabPlc" class="panel tab" style="display:none">
+    <h3>PLC alarms/tags</h3>
     <pre id="plcView"></pre>
   </section>
 
-  <section class="p tab" id="maintenance" style="display:none">
-    <h3>Предиктивное ТО и экология (6D/7D/8D)</h3>
-    <div class="grid" id="maint"></div>
+  <section id="tabMaint" class="panel tab" style="display:none">
+    <h3>Предиктивное ТО и экология</h3>
+    <div id="maint" class="grid"></div>
   </section>
 
-  <section class="p tab" id="personnel" style="display:none">
-    <h3>Ресурсы персонала и матрица навыков</h3>
-    <table><thead><tr><th>Имя</th><th>Роль</th><th>Skill</th><th>Fatigue</th><th>Speed</th><th>Risk</th></tr></thead><tbody id="staff"></tbody></table>
+  <section id="tabStaff" class="panel tab" style="display:none">
+    <h3>Операторы и усталость</h3>
+    <table>
+      <thead><tr><th>Имя</th><th>Роль</th><th>Skill</th><th>Fatigue</th><th>Speed</th><th>Risk</th></tr></thead>
+      <tbody id="staffBody"></tbody>
+    </table>
   </section>
 </div>
 
 <script>
-let S = {};
-const $ = (id) => document.getElementById(id);
-const els = {
-  batch: $('batch'), temp: $('temp'), rotor: $('rotor'), cnow: $('cnow'), cnext: $('cnext'),
+const $ = id => document.getElementById(id);
+const ui = {
+  batch: $('batch'), temp: $('temp'), rotor: $('rotor'), colorNow: $('colorNow'), colorNext: $('colorNext'),
   atex: $('atex'), ground: $('ground'), vent: $('vent'),
-  stateLine: $('stateLine'), msg: $('msg'), nodes: $('nodes'), kpi: $('kpi'), plcView: $('plcView'), maint: $('maint'), staff: $('staff')
+  stateLine: $('stateLine'), msg: $('msg'), nodes: $('nodes'), kpi: $('kpi'), plcView: $('plcView'), maint: $('maint'), staffBody: $('staffBody')
 };
+let state = {};
 
-function openTab(id, button){
-  document.querySelectorAll('.tab').forEach(el => el.style.display = 'none');
-  $(id).style.display = 'block';
+function openTab(tabId, button){
+  document.querySelectorAll('.tab').forEach(t => t.style.display = 'none');
+  $(tabId).style.display = 'block';
   document.querySelectorAll('.tabs button').forEach(b => b.classList.remove('active'));
   button.classList.add('active');
 }
-
 document.querySelectorAll('.tabs button').forEach(btn => {
   btn.addEventListener('click', () => openTab(btn.dataset.tab, btn));
 });
 
-async function post(payload){
-  const res = await fetch('/api/command', {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify(payload)
-  });
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+async function postCommand(payload){
+  const res = await fetch('/api/command', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)});
+  if(!res.ok) throw new Error(`HTTP ${res.status}`);
 }
-
-async function sendCmd(action){
-  await post({
-    action,
-    batch_size_kg: Number(els.batch.value),
-    target_temp_c: Number(els.temp.value),
-    mill_rotor_mps: Number(els.rotor.value),
-    color_now: els.cnow.value,
-    color_next: els.cnext.value,
-  });
-}
-
-async function setPermissives(){
-  await post({
-    action: 'set_permissives',
-    ATEX_ok: els.atex.checked,
-    Ground_ok: els.ground.checked,
-    Vent_on: els.vent.checked,
-  });
-}
-
-$('btnStart').addEventListener('click', async () => runSafe(() => sendCmd('start')));
-$('btnPause').addEventListener('click', async () => runSafe(() => sendCmd('pause')));
-$('btnResume').addEventListener('click', async () => runSafe(() => sendCmd('resume')));
-$('btnInject').addEventListener('click', async () => runSafe(() => sendCmd('inject_fault')));
-$('btnClear').addEventListener('click', async () => runSafe(() => sendCmd('clear_fault')));
-$('btnPermissive').addEventListener('click', async () => runSafe(setPermissives));
 
 async function runSafe(fn){
   try {
     await fn();
-    els.msg.textContent = 'Команда принята';
+    ui.msg.textContent = 'Команда отправлена';
   } catch (e) {
-    els.msg.textContent = `Ошибка отправки команды: ${e.message}`;
+    ui.msg.textContent = `Ошибка: ${e.message}`;
   }
 }
 
-function draw(){
-  if(!S.statuses) return;
-  els.stateLine.textContent = `Tick=${S.tick_min} мин | Running=${S.running} | Paused=${S.paused} | Completed=${S.completed}`;
+function commandPayload(action){
+  return {
+    action,
+    batch_size_kg: Number(ui.batch.value),
+    target_temp_c: Number(ui.temp.value),
+    mill_rotor_mps: Number(ui.rotor.value),
+    color_now: ui.colorNow.value,
+    color_next: ui.colorNext.value
+  };
+}
 
-  els.nodes.innerHTML = '';
-  Object.entries(S.statuses).forEach(([name, st]) => {
-    const d = document.createElement('div');
-    d.className = 'n';
-    d.innerHTML = `<b>${name}</b><br><span class="${st}">${st}</span>`;
-    els.nodes.appendChild(d);
+$('btnStart').addEventListener('click', () => runSafe(() => postCommand(commandPayload('start'))));
+$('btnPause').addEventListener('click', () => runSafe(() => postCommand(commandPayload('pause'))));
+$('btnResume').addEventListener('click', () => runSafe(() => postCommand(commandPayload('resume'))));
+$('btnFault').addEventListener('click', () => runSafe(() => postCommand(commandPayload('inject_fault'))));
+$('btnClear').addEventListener('click', () => runSafe(() => postCommand(commandPayload('clear_fault'))));
+$('btnPerm').addEventListener('click', () => runSafe(() => postCommand({action:'set_permissives', ATEX_ok: ui.atex.checked, Ground_ok: ui.ground.checked, Vent_on: ui.vent.checked})));
+
+function draw(){
+  if(!state.statuses) return;
+
+  ui.stateLine.textContent = `Tick=${state.tick_min} мин | Running=${state.running} | Paused=${state.paused} | Completed=${state.completed}`;
+
+  ui.nodes.innerHTML='';
+  Object.entries(state.statuses).forEach(([name, st]) => {
+    const d=document.createElement('div');
+    d.className='node';
+    d.innerHTML=`<b>${name}</b><br><span class="${st}">${st}</span>`;
+    ui.nodes.appendChild(d);
   });
 
-  els.kpi.innerHTML='';
-  const k=S.kpi,m=S.masses,q=S.quality;
+  ui.kpi.innerHTML='';
+  const k=state.kpi, m=state.masses, q=state.quality;
   [
-    ['Yield_pct',`${k.Yield_pct.toFixed(2)}%`],['Losses_pct',`${k.Losses_pct.toFixed(2)}%`],['E_total_kWh',k.E_total_kWh.toFixed(2)],['E_spec_kWh_kg',k.E_spec_kWh_kg.toFixed(3)],
-    ['VOC_mg_m3',k.VOC_mg_m3.toFixed(1)],['Carbon_kgCO2',k.Carbon_kgCO2.toFixed(2)],['D50/D90',`${q.D50_um.toFixed(1)} / ${q.D90_um.toFixed(1)}`],['DeltaE',q.DeltaE.toFixed(2)],
-    ['WIP Chips',`${m.chips_buffer.toFixed(1)} кг`],['WIP Powder',`${m.powder_buffer.toFixed(1)} кг`],['Packed',`${m.packed.toFixed(1)} кг`],['Batch',`${m.batch.toFixed(1)} кг`]
-  ].forEach(([n,v])=>{const c=document.createElement('div');c.className='card';c.innerHTML=`${n}<div class='v'>${v}</div>`;els.kpi.appendChild(c)});
+    ['Yield_pct', `${k.Yield_pct.toFixed(2)}%`], ['Losses_pct', `${k.Losses_pct.toFixed(2)}%`], ['E_total_kWh', k.E_total_kWh.toFixed(2)], ['E_spec_kWh_kg', k.E_spec_kWh_kg.toFixed(3)],
+    ['VOC_mg_m3', k.VOC_mg_m3.toFixed(1)], ['Carbon_kgCO2', k.Carbon_kgCO2.toFixed(2)], ['D50/D90', `${q.D50_um.toFixed(1)} / ${q.D90_um.toFixed(1)}`], ['DeltaE', q.DeltaE.toFixed(2)],
+    ['WIP Chips', `${m.chips_buffer.toFixed(1)} кг`], ['WIP Powder', `${m.powder_buffer.toFixed(1)} кг`], ['Packed', `${m.packed.toFixed(1)} кг`], ['Batch', `${m.batch.toFixed(1)} кг`]
+  ].forEach(([n,v]) => {
+    const c=document.createElement('div'); c.className='card'; c.innerHTML=`${n}<div class='val'>${v}</div>`; ui.kpi.appendChild(c);
+  });
 
-  els.plcView.textContent = JSON.stringify(S.plc, null, 2);
+  ui.plcView.textContent = JSON.stringify(state.plc, null, 2);
 
-  els.maint.innerHTML='';
-  const se=S.sensors;
-  [['Dust_DP_bar',se.Dust_DP_bar.toFixed(2)],['Dust_LEL_pct',`${se.Dust_LEL_pct.toFixed(1)}%`],['Liner_wear_mm',se.Liner_wear_mm.toFixed(3)],['Mill_runtime_h',se.Mill_runtime_h.toFixed(2)],['QC_hold_kg',se.QC_hold_kg.toFixed(1)],['CIP_remaining_min',se.CIP_remaining_min]].forEach(([n,v])=>{const c=document.createElement('div');c.className='card';c.innerHTML=`${n}<div class='v'>${v}</div>`;els.maint.appendChild(c)});
+  ui.maint.innerHTML='';
+  const s=state.sensors;
+  [
+    ['Dust_DP_bar', s.Dust_DP_bar.toFixed(2)], ['Dust_LEL_pct', `${s.Dust_LEL_pct.toFixed(1)}%`], ['Liner_wear_mm', s.Liner_wear_mm.toFixed(3)],
+    ['Mill_runtime_h', s.Mill_runtime_h.toFixed(2)], ['QC_hold_kg', s.QC_hold_kg.toFixed(2)], ['CIP_remaining_min', s.CIP_remaining_min]
+  ].forEach(([n,v]) => {
+    const c=document.createElement('div'); c.className='card'; c.innerHTML=`${n}<div class='val'>${v}</div>`; ui.maint.appendChild(c);
+  });
 
-  els.staff.innerHTML='';
-  S.personnel.forEach(p=>{const tr=document.createElement('tr');tr.innerHTML=`<td>${p.name}</td><td>${p.role}</td><td>${p.skill_level.toFixed(2)}</td><td>${p.fatigue.toFixed(2)}</td><td>${p.speed_factor.toFixed(2)}</td><td>${p.error_risk.toFixed(2)}</td>`;els.staff.appendChild(tr)});
+  ui.staffBody.innerHTML='';
+  state.personnel.forEach(p => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${p.name}</td><td>${p.role}</td><td>${p.skill_level.toFixed(2)}</td><td>${p.fatigue.toFixed(2)}</td><td>${p.speed_factor.toFixed(2)}</td><td>${p.error_risk.toFixed(2)}</td>`;
+    ui.staffBody.appendChild(tr);
+  });
 }
 
 async function poll(){
   try {
-    const r = await fetch('/api/state');
-    if (!r.ok) throw new Error(`HTTP ${r.status}`);
-    S = await r.json();
+    const res = await fetch('/api/state');
+    if(!res.ok) throw new Error(`HTTP ${res.status}`);
+    state = await res.json();
     draw();
   } catch (e) {
-    els.msg.textContent = `Ошибка опроса /api/state: ${e.message}`;
+    ui.msg.textContent = `Ошибка /api/state: ${e.message}`;
   }
 }
 
-setInterval(poll,700);
+setInterval(poll, 700);
 poll();
 </script>
 </body>
