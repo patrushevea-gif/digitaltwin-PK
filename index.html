@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Digital Twin — Powder Coating Line</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #111827;
+      --muted: #1f2937;
+      --text: #e5e7eb;
+      --idle: #6b7280;
+      --run: #16a34a;
+      --err: #dc2626;
+      --accent: #22c55e;
+    }
+    body { margin: 0; background: var(--bg); color: var(--text); font-family: Inter, Segoe UI, sans-serif; }
+    .wrap { max-width: 1400px; margin: 12px auto; padding: 0 12px; }
+    .panel { background: var(--panel); border: 1px solid #334155; border-radius: 10px; padding: 12px; margin-bottom: 12px; }
+    .row { display: flex; gap: 12px; flex-wrap: wrap; align-items: end; }
+    .field { display: flex; flex-direction: column; gap: 4px; min-width: 210px; }
+    .field input { background: var(--muted); color: var(--text); border: 1px solid #475569; border-radius: 8px; padding: 8px; }
+    button { background: #2563eb; color: white; border: 0; border-radius: 8px; padding: 8px 12px; cursor: pointer; }
+    button.secondary { background: #4b5563; }
+    button.warn { background: #ea580c; }
+    button.danger { background: #b91c1c; }
+    .status { margin-top: 8px; font-size: 14px; color: #cbd5e1; }
+
+    .pipeline { display: flex; gap: 8px; flex-wrap: wrap; }
+    .node { background: #1e293b; border-radius: 10px; min-width: 170px; padding: 8px; border: 1px solid #334155; position: relative; }
+    .node h4 { margin: 0 0 6px; font-size: 14px; }
+    .badge { display: inline-block; border-radius: 999px; padding: 2px 8px; font-size: 12px; margin-bottom: 4px; }
+    .arrow { font-size: 24px; align-self: center; opacity: 0.8; }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .chartBox { background: #0b1220; border: 1px solid #334155; border-radius: 10px; padding: 8px; }
+    canvas { width: 100%; height: 230px; }
+
+    .kpi { display: grid; grid-template-columns: repeat(4, minmax(120px, 1fr)); gap: 10px; margin-top: 10px; }
+    .kpi .card { background: #0b1220; border: 1px solid #334155; border-radius: 8px; padding: 8px; }
+    .kpi .v { font-size: 20px; color: #bbf7d0; font-weight: 700; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <h2>🎛️ Цифровой двойник линии эпоксидно‑полиэфирной порошковой краски</h2>
+
+  <section class="panel">
+    <h3>1) Верхняя панель — Управление</h3>
+    <div class="row">
+      <label class="field">Batch_size_kg
+        <input id="batchSize" type="number" min="100" max="2000" step="10" value="500" />
+      </label>
+      <label class="field">Target Extruder Temp (°C)
+        <input id="extrTemp" type="range" min="100" max="120" step="0.5" value="110" />
+      </label>
+      <label class="field">Mill_Rotor_mps
+        <input id="millRotor" type="range" min="70" max="130" step="1" value="95" />
+      </label>
+      <button id="startBtn">Start Batch</button>
+      <button id="pauseBtn" class="secondary">Pause/Resume</button>
+      <button id="faultBtn" class="warn">Inject Fault</button>
+      <button id="clearFaultBtn" class="danger">Clear Fault</button>
+    </div>
+    <div id="topStatus" class="status"></div>
+  </section>
+
+  <section class="panel">
+    <h3>2) Центральная панель — Мнемосхема</h3>
+    <div id="pipeline" class="pipeline"></div>
+    <div id="massInfo" class="status"></div>
+  </section>
+
+  <section class="panel">
+    <h3>3) Нижняя панель — Аналитика</h3>
+    <div class="grid-2">
+      <div class="chartBox">
+        <b>Температуры зон экструдера</b>
+        <canvas id="tempChart" width="640" height="240"></canvas>
+      </div>
+      <div class="chartBox">
+        <b>Энергопотребление E_total_kWh</b>
+        <canvas id="energyChart" width="640" height="240"></canvas>
+      </div>
+    </div>
+    <div class="kpi">
+      <div class="card"><div>Yield_pct</div><div class="v" id="kpiYield">0%</div></div>
+      <div class="card"><div>T_cycle_min</div><div class="v" id="kpiCycle">0</div></div>
+      <div class="card"><div>D50_um</div><div class="v" id="kpiD50">0</div></div>
+      <div class="card"><div>Losses_pct</div><div class="v" id="kpiLoss">0%</div></div>
+    </div>
+  </section>
+</div>
+
+<script>
+const NODES = ["Dosing","Premixer","Extruder","Cooling & Flaker","ACM Mill","Sieve","Packing"];
+const IDLE = "Idle", RUNNING = "Running", ERROR = "Error";
+
+const state = {
+  running: false, paused: false, batchActive: false, batchCompleted: false,
+  faultActive: false, faultCode: null, faultNode: null,
+  tickMin: 0, actualBatchKg: 500, targetBatchKg: 500,
+  premixCycleTargetMin: 12, premixElapsedMin: 0,
+  dosingProgressKg: 0, premixHoldKg: 0, extruderHotMeltKg: 0, chipsBufferKg: 0,
+  millPowderBufferKg: 0, sievedGoodBufferKg: 0, packedGoodKg: 0,
+  sieveRejectKg: 0, millDustLossKg: 0, boxesCount: 0,
+  extrTargetTempC: 110, millRotorMps: 95,
+  shaftRpm: 0, tMixC: 25, extrZonesC: [95,100,105],
+  energyTotalKWh: 0,
+  history: { tick:[], z1:[], z2:[], z3:[], energy:[] },
+  statuses: Object.fromEntries(NODES.map(n=>[n, IDLE]))
+};
+
+function rnd(min, max){ return min + Math.random()*(max-min); }
+function clamp(v,a,b){ return Math.min(b, Math.max(a,v)); }
+function lerp(cur, trg, a){ return cur + (trg-cur)*a; }
+
+function resetBatch(){
+  state.running = true; state.paused = false; state.batchActive = true; state.batchCompleted = false;
+  state.faultActive = false; state.faultCode = null; state.faultNode = null;
+  state.tickMin = 0;
+  state.targetBatchKg = Number(document.getElementById('batchSize').value);
+  state.actualBatchKg = state.targetBatchKg * rnd(0.99, 1.01); // ±1% dosing accuracy
+  state.extrTargetTempC = Number(document.getElementById('extrTemp').value);
+  state.millRotorMps = Number(document.getElementById('millRotor').value);
+  state.premixCycleTargetMin = Math.floor(rnd(10,16));
+  state.premixElapsedMin = 0;
+  state.dosingProgressKg = state.premixHoldKg = state.extruderHotMeltKg = 0;
+  state.chipsBufferKg = state.millPowderBufferKg = state.sievedGoodBufferKg = 0;
+  state.packedGoodKg = state.sieveRejectKg = state.millDustLossKg = 0;
+  state.boxesCount = 0;
+  state.shaftRpm = 0; state.tMixC = 25; state.extrZonesC = [95,100,105];
+  state.energyTotalKWh = 0;
+  state.history = { tick:[], z1:[], z2:[], z3:[], energy:[] };
+  state.statuses = Object.fromEntries(NODES.map(n=>[n, IDLE]));
+}
+
+function injectFault(){
+  if(!state.batchActive) return;
+  const list = [
+    {code:"EXTR_ZONE_HOT", node:"Extruder"},
+    {code:"FILTER_DP_HIGH", node:"ACM Mill"},
+    {code:"PACKER_JAM", node:"Packing"}
+  ];
+  const f = list[Math.floor(Math.random()*list.length)];
+  state.faultActive = true; state.faultCode = f.code; state.faultNode = f.node;
+  state.running = false; state.paused = true;
+  if(f.code === "EXTR_ZONE_HOT") state.extrZonesC[1] = 125;
+}
+
+function clearFault(){
+  state.faultActive = false; state.faultCode = null; state.faultNode = null;
+  if(state.batchActive){ state.paused = false; state.running = true; }
+}
+
+function tick(){
+  if(!state.running || state.paused || !state.batchActive || state.batchCompleted || state.faultActive) return;
+  state.tickMin += 1;
+  state.statuses = Object.fromEntries(NODES.map(n=>[n, IDLE]));
+
+  // Dosing
+  const dosingRate = state.actualBatchKg / 5;
+  if(state.dosingProgressKg < state.actualBatchKg){
+    state.statuses["Dosing"] = RUNNING;
+    const moved = Math.min(dosingRate, state.actualBatchKg - state.dosingProgressKg);
+    state.dosingProgressKg += moved;
+    state.premixHoldKg += moved;
+  }
+
+  // Premixer
+  if(state.dosingProgressKg >= state.actualBatchKg && state.premixHoldKg > 0 && state.premixElapsedMin < state.premixCycleTargetMin){
+    state.statuses["Premixer"] = RUNNING;
+    state.premixElapsedMin += 1;
+    state.shaftRpm = lerp(state.shaftRpm, 1200, 0.35);
+    state.tMixC = Math.min(lerp(state.tMixC, 88, 0.30), 95);
+  }
+  const premixComplete = state.premixElapsedMin >= state.premixCycleTargetMin && state.premixHoldKg > 0;
+
+  // Extruder
+  if(premixComplete){
+    state.statuses["Extruder"] = RUNNING;
+    const feedRate = rnd(250,300)/60;
+    for(let i=0;i<3;i++) state.extrZonesC[i] = lerp(state.extrZonesC[i], state.extrTargetTempC + (i-1)*3, 0.2);
+    const moved = Math.min(feedRate, state.premixHoldKg);
+    state.premixHoldKg -= moved;
+    state.extruderHotMeltKg += moved;
+  }
+
+  // Cooling belt + flaker
+  if(state.extruderHotMeltKg > 0){
+    state.statuses["Cooling & Flaker"] = RUNNING;
+    const moved = Math.min(320/60, state.extruderHotMeltKg);
+    state.extruderHotMeltKg -= moved;
+    state.chipsBufferKg += moved;
+  }
+
+  // ACM mill with 1-2% filter dust loss
+  if(state.chipsBufferKg > 0){
+    state.statuses["ACM Mill"] = RUNNING;
+    const moved = Math.min((200 + state.millRotorMps)/60, state.chipsBufferKg);
+    state.chipsBufferKg -= moved;
+    const dust = moved * rnd(0.01, 0.02);
+    state.millDustLossKg += dust;
+    state.millPowderBufferKg += moved - dust;
+  }
+
+  // Sieve with 0.5-1% reject
+  if(state.millPowderBufferKg > 0){
+    state.statuses["Sieve"] = RUNNING;
+    const moved = Math.min(240/60, state.millPowderBufferKg);
+    state.millPowderBufferKg -= moved;
+    const reject = moved * rnd(0.005, 0.01);
+    state.sieveRejectKg += reject;
+    state.sievedGoodBufferKg += moved - reject;
+  }
+
+  // Packing after powder buffer
+  if(state.sievedGoodBufferKg >= 20){
+    state.statuses["Packing"] = RUNNING;
+    let packed = Math.min(20, state.sievedGoodBufferKg); // 1 box per minute
+    packed -= packed % 20;
+    state.sievedGoodBufferKg -= packed;
+    state.packedGoodKg += packed;
+    state.boxesCount += packed/20;
+  }
+
+  if(state.faultActive) state.statuses[state.faultNode] = ERROR;
+
+  // Energy (kWh per minute)
+  const kw = {
+    "Dosing":4,"Premixer":35,"Extruder":90,"Cooling & Flaker":18,"ACM Mill":75,"Sieve":6,"Packing":10
+  };
+  let runningKw = 0;
+  NODES.forEach(n=>{ if(state.statuses[n]===RUNNING) runningKw += kw[n]; });
+  state.energyTotalKWh += runningKw/60;
+
+  // history
+  state.history.tick.push(state.tickMin);
+  state.history.z1.push(state.extrZonesC[0]);
+  state.history.z2.push(state.extrZonesC[1]);
+  state.history.z3.push(state.extrZonesC[2]);
+  state.history.energy.push(state.energyTotalKWh);
+
+  // complete condition
+  const inProcess = state.premixHoldKg + state.extruderHotMeltKg + state.chipsBufferKg + state.millPowderBufferKg + state.sievedGoodBufferKg;
+  if(state.dosingProgressKg >= state.actualBatchKg && state.premixElapsedMin >= state.premixCycleTargetMin && inProcess < 0.0001){
+    state.batchCompleted = true; state.batchActive = false; state.running = false; state.paused = false;
+    state.statuses = Object.fromEntries(NODES.map(n=>[n, IDLE]));
+  }
+}
+
+function statusColor(s){ return s===RUNNING ? "var(--run)" : s===ERROR ? "var(--err)" : "var(--idle)"; }
+
+function drawPipeline(){
+  const m = {
+    "Dosing": Math.max(0, state.actualBatchKg - state.dosingProgressKg),
+    "Premixer": state.premixHoldKg,
+    "Extruder": state.extruderHotMeltKg,
+    "Cooling & Flaker": state.chipsBufferKg,
+    "ACM Mill": state.millPowderBufferKg,
+    "Sieve": state.sievedGoodBufferKg,
+    "Packing": state.packedGoodKg,
+  };
+  const el = document.getElementById('pipeline');
+  el.innerHTML = "";
+  NODES.forEach((n, i)=>{
+    const node = document.createElement('div');
+    node.className = 'node';
+    node.innerHTML = `<h4>${n}</h4><div class='badge' style='background:${statusColor(state.statuses[n])}'>${state.statuses[n]}</div><div>m = ${m[n].toFixed(1)} kg</div>`;
+    el.appendChild(node);
+    if(i < NODES.length-1){ const arr = document.createElement('div'); arr.className = 'arrow'; arr.textContent = '➡'; el.appendChild(arr); }
+  });
+  document.getElementById('massInfo').textContent =
+    `Boxes: ${state.boxesCount} | Sieve_reject_kg: ${state.sieveRejectKg.toFixed(2)} | Mill_dust_loss_kg: ${state.millDustLossKg.toFixed(2)}`;
+}
+
+function drawLineChart(canvasId, series, colors, yMin, yMax){
+  const c = document.getElementById(canvasId), ctx = c.getContext('2d');
+  const w = c.width, h = c.height, pad = 30;
+  ctx.clearRect(0,0,w,h);
+  ctx.strokeStyle = '#334155';
+  ctx.strokeRect(pad, 10, w-pad-10, h-pad-10);
+  const n = Math.max(2, series[0].length);
+  function x(i){ return pad + i*(w-pad-20)/(n-1); }
+  function y(v){ return h-pad - ((v-yMin)/(yMax-yMin||1))*(h-pad-20); }
+
+  series.forEach((arr, idx)=>{
+    ctx.beginPath();
+    ctx.strokeStyle = colors[idx];
+    ctx.lineWidth = 2;
+    arr.forEach((v,i)=>{ if(i===0) ctx.moveTo(x(i), y(v)); else ctx.lineTo(x(i), y(v)); });
+    ctx.stroke();
+  });
+}
+
+function render(){
+  drawPipeline();
+  const top = document.getElementById('topStatus');
+  top.textContent = `Status: ${state.running&&!state.paused ? 'Running' : 'Paused/Stopped'} | Fault: ${state.faultCode || 'None'} | Tick: ${state.tickMin} min`;
+
+  const totalLoss = state.millDustLossKg + state.sieveRejectKg;
+  const yieldPct = state.actualBatchKg > 0 ? state.packedGoodKg/state.actualBatchKg*100 : 0;
+  const lossPct = state.actualBatchKg > 0 ? totalLoss/state.actualBatchKg*100 : 0;
+  const d50 = clamp(55 - (state.millRotorMps - 70)*0.45, 30, 50);
+
+  document.getElementById('kpiYield').textContent = `${yieldPct.toFixed(2)}%`;
+  document.getElementById('kpiCycle').textContent = String(state.tickMin);
+  document.getElementById('kpiD50').textContent = d50.toFixed(1);
+  document.getElementById('kpiLoss').textContent = `${lossPct.toFixed(2)}%`;
+
+  drawLineChart('tempChart', [state.history.z1,state.history.z2,state.history.z3], ['#60a5fa','#f97316','#22c55e'], 90, 130);
+  const eMax = Math.max(10, ...state.history.energy, state.energyTotalKWh);
+  drawLineChart('energyChart', [state.history.energy], ['#a78bfa'], 0, eMax*1.1);
+}
+
+document.getElementById('startBtn').onclick = ()=>{ resetBatch(); render(); };
+document.getElementById('pauseBtn').onclick = ()=>{ if(state.batchActive){ state.paused = !state.paused; state.running = !state.paused; render(); } };
+document.getElementById('faultBtn').onclick = ()=>{ injectFault(); render(); };
+document.getElementById('clearFaultBtn').onclick = ()=>{ clearFault(); render(); };
+
+document.getElementById('extrTemp').oninput = e => state.extrTargetTempC = Number(e.target.value);
+document.getElementById('millRotor').oninput = e => state.millRotorMps = Number(e.target.value);
+
+setInterval(()=>{ tick(); render(); }, 500); // 1 virtual minute every 0.5s
+render();
+</script>
+</body>
+</html>
